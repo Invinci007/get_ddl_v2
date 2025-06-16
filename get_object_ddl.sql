@@ -40,14 +40,9 @@ BEGIN
         EXCEPTION
             WHEN OTHER THEN
                 err_msg := 'Failed to get DDL: ' || SQLERRM;
-                -- Escape single quotes, backslashes, newlines, and carriage returns
-                err_msg := REPLACE(REPLACE(err_msg, '''', ''''''), '\\', '\\\\');
-                err_msg := REPLACE(err_msg, CHR(10), ' '); -- Replace newline with a space
-                err_msg := REPLACE(err_msg, CHR(13), ' '); -- Replace carriage return with a space
-                EXECUTE IMMEDIATE '
-                    INSERT INTO temp_defs(object_name, object_type, ddl)
-                    VALUES (''' || rec.full_name || ''', ''' || rec.object_type || ''', ''' || err_msg || ''')
-                ';
+                -- Log the error using bind variables for safety and to prevent SQL injection.
+                -- The raw error message (including special characters) will be stored.
+                EXECUTE IMMEDIATE 'INSERT INTO temp_defs(object_name, object_type, ddl) VALUES (?, ?, ?)' USING (rec.full_name, rec.object_type, err_msg);
         END;
     END FOR;
 
