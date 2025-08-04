@@ -11,7 +11,7 @@ EXECUTE AS CALLER
 AS $$
 var errors = [];
 var success_count = 0;
-var tables_query = "SELECT DISTINCT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME FROM \"" + P_CATALOG + "\".\"" + P_INFO_SCHEMA + "\".\"" + P_COLUMNS_TABLE + "\" WHERE TABLE_SCHEMA = ? AND COMMENT IS NOT NULL AND TABLE_SCHEMA != 'INFORMATION_SCHEMA'";
+var tables_query = "SELECT DISTINCT TABLE_CATALOG, TABLE_SCHEMA, TABLE_NAME FROM \"" + P_CATALOG + "\".\"" + P_INFO_SCHEMA + "\".\"" + P_COLUMNS_TABLE + "\" WHERE TABLE_SCHEMA = ? AND COMMENT IS NOT NULL AND TABLE_SCHEMA != 'INFORMATION_SCHEMA' OR TABLE_NAME IN (SELECT TABLE_NAME FROM \"" + P_CATALOG + "\".\"" + P_INFO_SCHEMA + "\".\"TABLES\" where comment is not null and comment <> '' and table_schema <> 'INFORMATION_SCHEMA')";
 
 var tables_stmt = snowflake.createStatement({sqlText: tables_query, binds:[P_SCHEMA]});
 var rs_tables = tables_stmt.execute();
